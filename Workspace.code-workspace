@@ -20,5 +20,8 @@
 			"name": "Root",
 			"path": ".",
 		}
-	]
+	],
+	"settings": {
+		"figura.librariesFolderPath": "C:\\Users\\vivia\\AppData\\Roaming\\.minecraft\\figura\\avatars\\libraries\\"
+	}
 }
