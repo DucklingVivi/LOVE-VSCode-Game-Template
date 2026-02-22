@@ -32,15 +32,18 @@ end
 function World:deserialize(packedWorld)
 	self.chunks = {}
 	local dataformat, packedData = love.data.unpack(packformat, packedWorld)
+	--- @cast dataformat string
+	---@diagnostic disable-next-line: cast-type-mismatch
+	--- @cast packedData string
 	local dataindex = 1
 	local chunkIndex = 1
 	for i = 1, #dataformat, 1 do
 		local format = dataformat:sub(i,i)
 		if format == "B" then
 			local indexDiff, newindex = love.data.unpack("B", packedData, dataindex)
+			--- @cast newindex number
 			dataindex = newindex
 			chunkIndex = chunkIndex + indexDiff
-			print("skipped " .. indexDiff .. " chunks, now at chunk index " .. chunkIndex)
 		elseif format == "s" then
 			local chunkData, newindex = love.data.unpack("s", packedData, dataindex)
 			dataindex = newindex
@@ -63,7 +66,6 @@ function World:serialize()
 		if indexDiff > 0 then
 			resultformat = resultformat .. "B"
 			packedData = packedData .. love.data.pack("string","B", indexDiff)
-			print("skipped " .. indexDiff .. " chunks at index " .. currentIndex)
 		end
 		resultformat = resultformat .. "s"
 		packedData = packedData .. love.data.pack("string", "s", chunk:serialize())

@@ -33,3 +33,12 @@ function Chunk:deserialize(packedChunk)
 		table.insert(self.tiles, tile)
 	end
 end
+
+function Chunk:render(x, y)
+	for index, tile in ipairs(self.tiles) do
+		local tileX = (index - 1) % 32
+		local tileY = math.floor((index - 1) / 32)
+		tile:render(x + tileX * 36, y + tileY * 36)
+	end
+end
+

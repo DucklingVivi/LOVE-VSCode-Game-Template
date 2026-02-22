@@ -7,33 +7,34 @@ function Game:new()
 	self.world = World();
 end
 
-local packformat = "ss"
+local packformat = "ssnn"
 
 
 function Game:serialize()
-	return love.data.pack("string", packformat, "egg", self.world:serialize());
+	return love.data.pack("string", packformat, "egg", self.world:serialize(),self.camera.x, self.camera.y);
 end
 
 --- Deserializes game data and restores the game state.
 --- @param data string The serialized game data to deserialize
 --- @return nil
 function Game:deserialize(data)
-	local unpackedData, packedWorld = love.data.unpack(packformat, data)
+	local unpackedData, packedWorld, cameraX, cameraY = love.data.unpack(packformat, data)
 	self.world = World()
 	self.world:deserialize(packedWorld)
+	self.camera.x = cameraX
+	self.camera.y = cameraY
 end
 
 function Game:initalize()
 	
-	for i = 1, 10, 1 do
-		for j = 1, 10, 1 do
-			print(World.coordToSpiralIndex(i-5, j-5))
-		end
-	end
+	
 	self.world.chunks[1] = Chunk()
 	
 	for i = 1, 32*32, 1 do
-		self.world.chunks[1].tiles[i].enabled = true
+		--restrict to a 10x10 area for testing
+		if ((i - 1) % 32 < 10) and (math.floor((i - 1) / 32) < 10) then
+			self.world.chunks[1].tiles[i].id = 1
+		end
 	end
 
 end
@@ -65,13 +66,13 @@ function Game:update(dt)
 		if(not self.world.chunks[chunkIndex]) then
 			self.world.chunks[chunkIndex] = Chunk()
 		end
-		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].enabled = true
+		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].id = 1
 	end
 	if(mouseDown2) then
 		if(not self.world.chunks[chunkIndex]) then
 			self.world.chunks[chunkIndex] = Chunk()
 		end
-		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].enabled = false
+		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].id = 0
 	end
 
 	local rl = (love.keyboard.isDown("a") and 1 or 0) - (love.keyboard.isDown("d") and 1 or 0)
@@ -84,9 +85,7 @@ function Game:update(dt)
 		save:saveToFile(file)
 		file:close()
 	end
-	if love.keyboard.isDown("c") then
-		print(self.world.chunks[1].tiles[1].enabled)
-	end
+	
 	oldMouse1Down = mouseDown1
 	oldMouse2Down = mouseDown2
 end
@@ -124,13 +123,7 @@ function Game:draw()
 			local chunkX = i * 32 * 36
 			local chunkY = j * 32 * 36
 			if chunk then
-				for index, value in ipairs(chunk.tiles) do
-					local x = (index - 1) % 32
-					local y = math.floor((index - 1) / 32)
-					if value.enabled then
-						Rendering.atlasSpriteBatch:add(Resources.quads["Debug4"], chunkX + 25 + x * 36, chunkY + 25 + y * 36, 0,3,3)
-					end
-				end
+				chunk:render(chunkX, chunkY)
 			end
 		end
 	end
