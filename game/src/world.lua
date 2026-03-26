@@ -7,6 +7,11 @@ function World:new()
 	self.chunks = {} -- 2D array of chunks, integer indexed in a spiral pattern
 end
 
+function World:update(dt)
+	for i, chunk in pairs(self.chunks) do
+		chunk:update(dt)
+	end
+end
 
 function World.coordToSpiralIndex(x,y)
 	local M = math.max(math.abs(x), math.abs(y))

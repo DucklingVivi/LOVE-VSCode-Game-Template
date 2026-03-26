@@ -1,24 +1,23 @@
 Game = Object:extend();
 require "src/camera"
-require "src/resources"
 require "src/world"
 function Game:new()
 	self.camera = Camera();
 	self.world = World();
 end
 
-local packformat = "ssnn"
+local packformat = "snn"
 
 
 function Game:serialize()
-	return love.data.pack("string", packformat, "egg", self.world:serialize(),self.camera.x, self.camera.y);
+	return love.data.pack("string", packformat, self.world:serialize(),self.camera.x, self.camera.y);
 end
 
 --- Deserializes game data and restores the game state.
 --- @param data string The serialized game data to deserialize
 --- @return nil
 function Game:deserialize(data)
-	local unpackedData, packedWorld, cameraX, cameraY = love.data.unpack(packformat, data)
+	local packedWorld, cameraX, cameraY = love.data.unpack(packformat, data)
 	self.world = World()
 	self.world:deserialize(packedWorld)
 	self.camera.x = cameraX
@@ -66,7 +65,7 @@ function Game:update(dt)
 		if(not self.world.chunks[chunkIndex]) then
 			self.world.chunks[chunkIndex] = Chunk()
 		end
-		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].id = 1
+		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].id = 11
 	end
 	if(mouseDown2) then
 		if(not self.world.chunks[chunkIndex]) then
@@ -88,6 +87,9 @@ function Game:update(dt)
 	
 	oldMouse1Down = mouseDown1
 	oldMouse2Down = mouseDown2
+
+	self.world:update(dt)
+
 end
 
 function Game:draw()

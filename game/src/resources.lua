@@ -3,6 +3,7 @@ resources.quads = {}
 
 local to_stitch = {
 	["Debug4"] = love.graphics.newImage("assets/debug4.png"),
+	["emitter"] = love.graphics.newImage("assets/debug_emitter.png"),
 	["selector"] = love.graphics.newImage("assets/selector.png")
 }
 
@@ -45,6 +46,86 @@ end
 resources.atlas = stitch_atlas();
 
 
+resources.tiles = {}
+local function new_tile(id, texture)
+	return {
+		id = id,
+		texture = texture,
+		r = 1,
+		g = 1,
+		b = 1,
+		a = 1,
+		color = function(self, r, g, b, a)
+			self.r = r
+			self.g = g
+			self.b = b
+			self.a = a or 1
+			return self
+		end,
+		serialize = function(self, func)
+			self.tserialize = func
+			return self
+		end,
+		deserialize = function(self, func)
+			self.tdeserialize = func
+			return self
+		end,
+		update = function(self, func)
+			self.tupdate = func
+			return self
+		end,
+		create = function(self, func)
+			self.tcreate = func
+			return self
+		end,
+		finish = function(self)
+			self.serialize = nil
+			self.deserialize = nil
+			self.update = nil
+			self.create = nil
+			if self.tcreate ~= nil then
+				self.create = self.tcreate
+				self.tcreate = nil
+			end
+			if self.tserialize ~= nil then
+				self.serialize = self.tserialize
+				self.tserialize = nil
+			end
+			if self.tdeserialize ~= nil then
+				self.deserialize = self.tdeserialize
+				self.tdeserialize = nil
+			end
+			if self.tupdate ~= nil then
+				self.update = self.tupdate
+				self.tupdate = nil
+			end
+
+			
+			self.color = function(s)
+				return s.r, s.g, s.b, s.a
+			end
+			resources.tiles[self.id] = self
+			return self
+		end
+	}
+
+end
+
+
+
+new_tile(1,"Debug4"):finish()
+new_tile(2,"Debug4"):color(1,0,0):finish()
+new_tile(3,"Debug4"):color(0,1,0):finish()
+new_tile(4,"Debug4"):color(0,0,1):finish()
+new_tile(5,"Debug4"):color(1,1,0):finish()
+new_tile(6,"Debug4"):color(1,0,1):finish()
+new_tile(7,"Debug4"):color(0,1,1):finish()
+new_tile(8,"Debug4"):color(0.5,0.5,0.5):finish()
+new_tile(9,"Debug4"):color(1,0.5,0):finish()
+new_tile(10,"Debug4"):color(0.5,1,0):finish()
+
+local emitter = require("src/emitter")
+new_tile(11,"emitter"):color(.5,1,.5):create(emitter.create):update(emitter.update):finish()
 
 
 return resources

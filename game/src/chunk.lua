@@ -8,6 +8,12 @@ function Chunk:new()
 	end
 end
 
+function Chunk:update(dt)
+	for i, tile in pairs(self.tiles) do
+		tile:update(dt)
+	end
+end
+
 function Chunk:serialize()
 	local packedData = ""
 	for i, tile in ipairs(self.tiles) do
