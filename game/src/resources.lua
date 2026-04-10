@@ -48,6 +48,8 @@ resources.atlas = stitch_atlas();
 
 resources.tiles = {}
 local function new_tile(id, texture)
+	-- Temporary table to hold method names for replacement after finish is called
+	local replace_temp = {"serialize", "deserialize", "update", "create"}
 	return {
 		id = id,
 		texture = texture,
@@ -79,27 +81,14 @@ local function new_tile(id, texture)
 			return self
 		end,
 		finish = function(self)
-			self.serialize = nil
-			self.deserialize = nil
-			self.update = nil
-			self.create = nil
-			if self.tcreate ~= nil then
-				self.create = self.tcreate
-				self.tcreate = nil
+			
+			for _, v in pairs(replace_temp) do
+				self[v] = nil
+				if self["t"..v] ~= nil then
+					self[v] = self["t"..v]
+					self["t"..v] = nil
+				end
 			end
-			if self.tserialize ~= nil then
-				self.serialize = self.tserialize
-				self.tserialize = nil
-			end
-			if self.tdeserialize ~= nil then
-				self.deserialize = self.tdeserialize
-				self.tdeserialize = nil
-			end
-			if self.tupdate ~= nil then
-				self.update = self.tupdate
-				self.tupdate = nil
-			end
-
 			
 			self.color = function(s)
 				return s.r, s.g, s.b, s.a

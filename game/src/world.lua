@@ -1,16 +1,18 @@
 World = Object:extend()
 require "src/chunk"
-
+require "src/laserManager"
 local packformat = "ss"
 
 function World:new()
 	self.chunks = {} -- 2D array of chunks, integer indexed in a spiral pattern
+	self.laserManager = LaserManager()
 end
 
 function World:update(dt)
-	for i, chunk in pairs(self.chunks) do
-		chunk:update(dt)
+	for _, chunk in pairs(self.chunks) do
+		chunk:update(dt, self)
 	end
+	self.laserManager:update(dt, self)
 end
 
 function World.coordToSpiralIndex(x,y)
