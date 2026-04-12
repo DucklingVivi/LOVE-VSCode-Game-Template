@@ -57,6 +57,7 @@ local function new_tile(id, texture)
 		g = 1,
 		b = 1,
 		a = 1,
+		components = {},
 		color = function(self, r, g, b, a)
 			self.r = r
 			self.g = g
@@ -70,6 +71,10 @@ local function new_tile(id, texture)
 		end,
 		deserialize = function(self, func)
 			self.tdeserialize = func
+			return self
+		end,
+		with_component = function(self, component)
+			table.insert(self.components, component)
 			return self
 		end,
 		update = function(self, func)
@@ -114,7 +119,26 @@ new_tile(9,"Debug4"):color(1,0.5,0):finish()
 new_tile(10,"Debug4"):color(0.5,1,0):finish()
 
 local emitter = require("src/emitter")
-new_tile(11,"emitter"):color(.5,1,.5):create(emitter.create):update(emitter.update):finish()
+new_tile(11,"emitter")
+:color(.5,1,.5)
+:serialize(emitter.serialize)
+:deserialize(emitter.deserialize)
+:create(emitter.create)
+:update(emitter.update)
+:finish()
+
+new_tile(12,"mirror")
+:color(1,1,1)
+:serialize(function(self)
+	return love.data.pack("string", "B", self.direction)
+end)
+:deserialize(function(self, packedData)
+	local direction, _ = love.data.unpack("B", packedData)
+	self.direction = direction
+end)
+:create(function(self)
+	self.direction = 0
+end)
 
 
 return resources

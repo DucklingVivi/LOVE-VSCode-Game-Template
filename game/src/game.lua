@@ -31,7 +31,8 @@ function Game:initalize()
 	
 	for i = 1, 32*32, 1 do
 		--restrict to a 10x10 area for testing
-		if ((i - 1) % 32 < 10) and (math.floor((i - 1) / 32) < 10) then
+		if ((i - 1) % 32 < 16) and (math.floor((i - 1) / 32) < 16) then
+			self.world.chunks[1].tiles[i] = Tile()
 			self.world.chunks[1].tiles[i].id = 1
 		end
 	end
@@ -65,7 +66,10 @@ function Game:update(dt)
 		if(not self.world.chunks[chunkIndex]) then
 			self.world.chunks[chunkIndex] = Chunk()
 		end
+		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1] = Tile()
 		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].id = 11
+		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1]:create()
+
 	end
 	if(mouseDown2) then
 		if(not self.world.chunks[chunkIndex]) then

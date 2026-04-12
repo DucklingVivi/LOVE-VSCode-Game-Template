@@ -8,9 +8,9 @@ function Chunk:new()
 	end
 end
 
-function Chunk:update(dt, world)
+function Chunk:update(dt, world, k)
 	for i, tile in pairs(self.tiles) do
-		tile:update(dt, world, self, i)
+		tile:update(dt, world, k, i)
 	end
 end
 

@@ -41,13 +41,13 @@ function Tile:deserialize(packedTile)
 	--- @cast byteIndex number
 	local resource = Resources.tiles[self.id]
 	if resource and resource.deserialize then
-		local serializedTile = love.data.unpack("string", packedTile, byteIndex)
+		local serializedTile = love.data.unpack("s", packedTile, byteIndex)
 		resource.deserialize(self, serializedTile)
 	end
 end
 
 function Tile:hasExtraData()
-	return self.id > 0b00001111
+	return false
 end
 
 function Tile:getColor()
@@ -56,6 +56,13 @@ end
 
 function Tile:getQuad()
 	return Resources.quads[Resources.tiles[self.id].texture]
+end
+
+function Tile:create()
+	local resource = Resources.tiles[self.id]
+	if resource and resource.create then
+		resource.create(self)
+	end
 end
 
 function Tile:render(x, y)

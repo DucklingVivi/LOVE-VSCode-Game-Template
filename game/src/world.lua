@@ -9,10 +9,31 @@ function World:new()
 end
 
 function World:update(dt)
-	for _, chunk in pairs(self.chunks) do
-		chunk:update(dt, self)
+	for k, chunk in pairs(self.chunks) do
+		chunk:update(dt, self, k)
 	end
 	self.laserManager:update(dt, self)
+end
+
+function World.spiralIndexToCoord(index)
+	if index == 1 then
+		return 0, 0
+	end
+	local M = math.ceil((math.sqrt(index) - 1) / 2)
+	local base = (2 * M - 1) ^ 2
+	local side = 2 * M
+	local offset = index - base - 1
+	local sideIndex = math.floor(offset / side)
+	local positionIndex = offset % side
+	if sideIndex == 0 then
+		return M, -M + positionIndex + 1
+	elseif sideIndex == 1 then
+		return M - positionIndex - 1, M
+	elseif sideIndex == 2 then
+		return -M, M - positionIndex - 1
+	else
+		return -M + positionIndex + 1, -M
+	end
 end
 
 function World.coordToSpiralIndex(x,y)
