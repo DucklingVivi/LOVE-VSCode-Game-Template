@@ -2,6 +2,7 @@ Tile = Object:extend()
 
 function Tile:new()
 	self.id = 0
+	self.direction = 0
 end
 
 function Tile:update(dt, world, chunk, index)
@@ -12,32 +13,23 @@ function Tile:update(dt, world, chunk, index)
 end
 
 function Tile:serialize()
-	local data = bit.bor(self.id, (self:hasExtraData() and 0b10000000 or 0))
+	local directionBits = bit.lshift(bit.band(self.direction,0x00000011), 6)
+	local data = bit.bor(bit.band(self.id, 0b00111111), directionBits)
 	local serializedTile = love.data.pack("string", "B", data)
-	if self:hasExtraData() then
-		serializedTile = serializedTile .. love.data.pack("string", "s", self:serializeExtraData())
-	end
 	local resource = Resources.tiles[self.id]
-	if resource and resource.serialize then 
+	if resource and resource.serialize then
 		serializedTile = serializedTile .. love.data.pack("string", "s", resource.serialize(self))
 	end
 	return serializedTile
 end
 
-function Tile:serializeExtraData()
-	return "extra data"
-end
 
 function Tile:deserialize(packedTile)
-	local dataByte, byteIndex = love.data.unpack("B", packedTile)
-	--- @cast dataByte number
+	local data, byteIndex = love.data.unpack("B", packedTile)
+	--- @cast data number
 	--- @cast byteIndex number
-	local hasExtraData = bit.band(dataByte, 0b10000000) ~= 0
-	self.id = bit.band(dataByte, 0b01111111)
-	if hasExtraData then
-		local extraData, newidx = love.data.unpack("s", packedTile, byteIndex)
-		byteIndex = newidx
-	end
+	self.id = bit.band(data, 0b00111111)
+	self.direction = bit.rshift(bit.band(data, 0b11000000), 6)
 	--- @cast byteIndex number
 	local resource = Resources.tiles[self.id]
 	if resource and resource.deserialize then
@@ -46,8 +38,9 @@ function Tile:deserialize(packedTile)
 	end
 end
 
-function Tile:hasExtraData()
-	return false
+
+function Tile:getResource()
+	return Resources.tiles[self.id]
 end
 
 function Tile:getColor()
@@ -68,6 +61,6 @@ end
 function Tile:render(x, y)
 	if Resources.tiles[self.id] then
 		Rendering.atlasSpriteBatch:setColor(self:getColor())
-		Rendering.atlasSpriteBatch:add(self:getQuad(), x + 25, y + 25, 0,3,3)
+		Rendering.atlasSpriteBatch:add(self:getQuad(), x + 25, y + 25, math.pi * self.direction / 2,3,3, 6,6)
 	end
 end

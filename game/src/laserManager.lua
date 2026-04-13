@@ -2,10 +2,7 @@ LaserManager = Object:extend()
 require "src/laser"
 
 
-local function calculateLaserValue(chunk, index, direction)
-	local laserindex = (chunk * 32*32 + index) * 4 + direction - 1
-	return laserindex
-end
+
 
 function LaserManager:new()
 	self.lasers = {}
@@ -27,20 +24,27 @@ function LaserManager:update(dt, world)
 	self.nextvalues = {}
 end
 
+function LaserManager:render()
+	for _, laser in pairs(self.lasers) do
+		laser:render()
+	end
+end
+
+
 function LaserManager:addLaser(chunk, index, direction, value, strength)
-	local laserindex = calculateLaserValue(chunk, index, direction)
+	local laserindex = Utils.calculateLaserValue(chunk, index, direction)
 	self.lasers[laserindex] = Laser(laserindex, value, strength)
 end
 
  
 
 function LaserManager:laserAt(chunk, index, direction)
-	local laserindex = calculateLaserValue(chunk, index, direction)
+	local laserindex = Utils.calculateLaserValue(chunk, index, direction)
 	return self.lasers[laserindex]
 end
 
 function LaserManager:setLaserValue(chunk, index, direction, value)
-	local laserindex = calculateLaserValue(chunk, index, direction)
+	local laserindex = Utils.calculateLaserValue(chunk, index, direction)
 	self.nextvalues[laserindex] = value
 end
 

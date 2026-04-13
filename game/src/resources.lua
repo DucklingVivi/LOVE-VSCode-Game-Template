@@ -1,10 +1,12 @@
 local resources = {}
 resources.quads = {}
-
+resources.components = require("src/components")
 local to_stitch = {
 	["Debug4"] = love.graphics.newImage("assets/debug4.png"),
 	["emitter"] = love.graphics.newImage("assets/debug_emitter.png"),
-	["selector"] = love.graphics.newImage("assets/selector.png")
+	["selector"] = love.graphics.newImage("assets/selector.png"),
+	["mirror"] = love.graphics.newImage("assets/mirror.png"),
+	["laser"] = love.graphics.newImage("assets/laser.png")
 }
 
 local texture_size = 12
@@ -45,12 +47,56 @@ end
 --- @type love.Canvas
 resources.atlas = stitch_atlas();
 
+-- Temporary table to hold method names for replacement after finish is called
+local replace_temp = {"serialize", "deserialize", "update", "create", "laser_enter"}
+local mapper = {
+	serialize = function(funcs)
+		return function(self)
+			local packedData = ""
+			local count = 0
+			for key, func in pairs(funcs) do
+				count = count + 1
+				packedData = packedData .. love.data.pack("string", "ss", key, func(self))
+			end
+			return love.data.pack("string", "B", count) .. packedData
+		end
+	end,
+	deserialize = function(funcs)
+
+		return function(self, packedData)
+			local number, index = love.data.unpack("B", packedData)
+			--- @cast number number
+			--- @cast index number
+			local values = {}
+			for i = 1, number, 1 do
+				local key, data, new_index = love.data.unpack("ss", packedData, index)
+				--- @cast data string
+				--- @cast new_index number
+				index = new_index
+				values[key] = data
+			end
+			for k, func in pairs(funcs) do
+				func(self, values[k])
+			end
+		end
+	end,
+	default = function(funcs)
+		return function(...)
+			for _, func in pairs(funcs) do
+				func(...)
+			end
+		 end
+	end
+}
+setmetatable(mapper, {
+	__index = function(t, k)
+		return rawget(t, k) or t.default
+	end
+})
 
 resources.tiles = {}
 local function new_tile(id, texture)
-	-- Temporary table to hold method names for replacement after finish is called
-	local replace_temp = {"serialize", "deserialize", "update", "create"}
-	return {
+		local ret = {
 		id = id,
 		texture = texture,
 		r = 1,
@@ -65,33 +111,37 @@ local function new_tile(id, texture)
 			self.a = a or 1
 			return self
 		end,
-		serialize = function(self, func)
-			self.tserialize = func
-			return self
-		end,
-		deserialize = function(self, func)
-			self.tdeserialize = func
-			return self
-		end,
 		with_component = function(self, component)
-			table.insert(self.components, component)
+			self.components[component.id] = component
 			return self
 		end,
-		update = function(self, func)
-			self.tupdate = func
-			return self
-		end,
-		create = function(self, func)
-			self.tcreate = func
-			return self
+		has_extra_data = function(self)
+			for _, component in pairs(self.components) do
+				if component:hasExtraData() then
+					return true
+				end
+			end
+			return false
 		end,
 		finish = function(self)
 			
 			for _, v in pairs(replace_temp) do
+				for _, component in pairs(self.components) do
+					if component[v] then
+						self["funcs_"..v][component.id] = component[v]
+					end
+				end
 				self[v] = nil
 				if self["t"..v] ~= nil then
-					self[v] = self["t"..v]
+					self["funcs_"..v]["t"] = self["t"..v]
 					self["t"..v] = nil
+				end
+				local count = 0
+				for _, _ in pairs(self["funcs_"..v]) do
+					count = count + 1
+				end
+				if count > 0 then
+					self[v] = mapper[v](self["funcs_"..v])
 				end
 			end
 			
@@ -102,7 +152,14 @@ local function new_tile(id, texture)
 			return self
 		end
 	}
-
+	for _, v in pairs(replace_temp) do
+		ret[v] = function(self, func)
+			self["t"..v] = func
+			return self
+		end
+		ret["funcs_"..v] = {}
+	end
+	return ret
 end
 
 
@@ -118,27 +175,14 @@ new_tile(8,"Debug4"):color(0.5,0.5,0.5):finish()
 new_tile(9,"Debug4"):color(1,0.5,0):finish()
 new_tile(10,"Debug4"):color(0.5,1,0):finish()
 
-local emitter = require("src/emitter")
+
 new_tile(11,"emitter")
-:color(.5,1,.5)
-:serialize(emitter.serialize)
-:deserialize(emitter.deserialize)
-:create(emitter.create)
-:update(emitter.update)
+:color(.5,1,0):with_component(resources.components.emitter)
 :finish()
 
 new_tile(12,"mirror")
-:color(1,1,1)
-:serialize(function(self)
-	return love.data.pack("string", "B", self.direction)
-end)
-:deserialize(function(self, packedData)
-	local direction, _ = love.data.unpack("B", packedData)
-	self.direction = direction
-end)
-:create(function(self)
-	self.direction = 0
-end)
+:color(1,1,1):with_component(resources.components.mirror)
+:finish()
 
 
 return resources

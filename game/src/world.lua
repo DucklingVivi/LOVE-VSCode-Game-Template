@@ -3,8 +3,21 @@ require "src/chunk"
 require "src/laserManager"
 local packformat = "ss"
 
+local chunkmeta = {
+	__index = function(t,k)
+		local val = rawget(t,k)
+		if(val == nil) then
+			local chunk = Chunk()
+			rawset(t, k, chunk)
+			val = chunk
+		end
+		return val
+	end
+}
+
 function World:new()
 	self.chunks = {} -- 2D array of chunks, integer indexed in a spiral pattern
+	setmetatable(self.chunks, chunkmeta)
 	self.laserManager = LaserManager()
 end
 
@@ -15,50 +28,13 @@ function World:update(dt)
 	self.laserManager:update(dt, self)
 end
 
-function World.spiralIndexToCoord(index)
-	if index == 1 then
-		return 0, 0
-	end
-	local M = math.ceil((math.sqrt(index) - 1) / 2)
-	local base = (2 * M - 1) ^ 2
-	local side = 2 * M
-	local offset = index - base - 1
-	local sideIndex = math.floor(offset / side)
-	local positionIndex = offset % side
-	if sideIndex == 0 then
-		return M, -M + positionIndex + 1
-	elseif sideIndex == 1 then
-		return M - positionIndex - 1, M
-	elseif sideIndex == 2 then
-		return -M, M - positionIndex - 1
-	else
-		return -M + positionIndex + 1, -M
-	end
-end
 
-function World.coordToSpiralIndex(x,y)
-	local M = math.max(math.abs(x), math.abs(y))
-	if M == 0 then
-		return 1
-	end
-	local base = (2 * M - 1) ^ 2
-	local side = 2 * M
-	if x == M and y > -M then
-		return base + (y + M)
-	elseif y == M then
-		return base + side + (M - x)
-	elseif x == -M then
-		return base + 2 * side + (M - y)
-	else
-		return base + 3 * side + (x + M)
-	end
-end
 
 --- Deserializes packed data to reconstruct the World state.
 --- @param packedWorld string The serialized world data to deserialize
 --- @return nil
 function World:deserialize(packedWorld)
-	self.chunks = {}
+
 	local dataformat, packedData = love.data.unpack(packformat, packedWorld)
 	--- @cast dataformat string
 	---@diagnostic disable-next-line: cast-type-mismatch

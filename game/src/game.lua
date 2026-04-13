@@ -52,30 +52,31 @@ function Game:update(dt)
 	worldMouseX = worldMouseX + self.camera.x
 	worldMouseY = worldMouseY + self.camera.y
 
-	worldMouseX = math.floor((worldMouseX - 25) / 36)
-	worldMouseY = math.floor((worldMouseY - 25) / 36)
+	worldMouseX = math.floor((worldMouseX - 7) / 36)
+	worldMouseY = math.floor((worldMouseY - 7) / 36)
 
 	local chunkX = math.floor(worldMouseX / 32)
 	local chunkY = math.floor(worldMouseY / 32)
-	local chunkIndex = World.coordToSpiralIndex(chunkX, chunkY)
+	local chunkIndex = Utils.coordToSpiralIndex(chunkX, chunkY)
 
 	local tilex = worldMouseX % 32
 	local tiley = worldMouseY % 32
 
 	if(mouseDown1) then
-		if(not self.world.chunks[chunkIndex]) then
-			self.world.chunks[chunkIndex] = Chunk()
-		end
 		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1] = Tile()
 		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].id = 11
 		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1]:create()
 
 	end
-	if(mouseDown2) then
-		if(not self.world.chunks[chunkIndex]) then
-			self.world.chunks[chunkIndex] = Chunk()
+	if(mouse2Pressed) then
+		if(self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].id ~= 12) then
+			self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1] = Tile()
+			self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].id = 12
+			self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1]:create()
+		else
+			self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].direction = (self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].direction + 1) % 4
 		end
-		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].id = 0
+		
 	end
 
 	local rl = (love.keyboard.isDown("a") and 1 or 0) - (love.keyboard.isDown("d") and 1 or 0)
@@ -124,7 +125,7 @@ function Game:draw()
 	
 	for i = leftMostChunk - 1, rightMostChunk + 1, 1 do
 		for j = topMostChunk - 1, bottomMostChunk + 1, 1 do
-			local chunkIndex = World.coordToSpiralIndex(i, j)
+			local chunkIndex = Utils.coordToSpiralIndex(i, j)
 			local chunk = self.world.chunks[chunkIndex]
 			local chunkX = i * 32 * 36
 			local chunkY = j * 32 * 36
@@ -134,12 +135,15 @@ function Game:draw()
 		end
 	end
 
+	Rendering.atlasSpriteBatch:setColor(1, 1, 1)
+	self.world.laserManager:render()
+
 	love.graphics.draw(Rendering.atlasSpriteBatch)
 
 	local x, y = love.mouse.getPosition()
-	local selectorx = math.floor((x + self.camera.x - 25) / 36) * 36 + 25
-	local selectory = math.floor((y + self.camera.y - 25) / 36) * 36 + 25
-	for i = 0, 24, 1 do
+	local selectorx = math.floor((x + self.camera.x - 7) / 36) * 36 + 7
+	local selectory = math.floor((y + self.camera.y - 7) / 36) * 36 + 7
+	for i = 12, 12, 1 do
 		local offsetx = i % 5 - 2
 		local offsety = math.floor(i / 5) - 2
 		love.graphics.draw(Resources.atlas, Resources.quads["selector"], selectorx + offsetx * 36, selectory + offsety * 36, 0, 3, 3)

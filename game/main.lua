@@ -7,7 +7,7 @@ function love.load()
 	require "src/save"
 	Resources = require "src/resources"
 	Rendering = require "src/rendering"
-	
+	Utils = require "src/utils"
 
 	local saveDir = "saves"
 	--Ensure the save directory exists
