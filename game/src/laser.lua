@@ -55,6 +55,11 @@ function Laser:buildPath(world)
 	self.chunk, self.index, self.direction = Utils.calculateLaserOrigin(current)
 
 	local startx, starty = Utils.spiralIndexToCoord(self.chunk)
+	local indexx = (self.index - 1) % 32
+	local indexy = math.floor((self.index - 1) / 32)
+
+	local worldx = (startx * 32 + indexx) * 36 + 25
+	local worldy = (starty * 32 + indexy) * 36 + 25
 	
 	while self.strength > 0 do
 		self.chunk, self.index = moveLaser(self.chunk, self.index, self.direction)

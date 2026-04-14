@@ -29,6 +29,7 @@ function World:update(dt)
 end
 
 
+function 
 
 --- Deserializes packed data to reconstruct the World state.
 --- @param packedWorld string The serialized world data to deserialize
