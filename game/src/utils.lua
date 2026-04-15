@@ -1,16 +1,32 @@
 local utils = {}
 
-function utils.calculateLaserValue(chunk, index, direction)
+function utils.getIdxFromCoord(x,y)
+	
+	local chunkidx = Utils.coordToSpiralIndex(math.floor(x / 32), math.floor(y / 32))
+	local tileid = x % 32 + (y % 32) * 32 + 1
+	return chunkidx, tileid
+end
+
+
+function utils.getCoordFromIdx(chunkidx, tileid)
+	local chunkx, chunky = Utils.spiralIndexToCoord(chunkidx)
+	local tilex = (tileid - 1) % 32
+	local tiley = math.floor((tileid - 1) / 32)
+	return chunkx * 32 + tilex, chunky * 32 + tiley
+end
+
+function utils.calculateLaserValue(tilex, tiley, direction)
+	local chunk, index = Utils.getIdxFromCoord(tilex, tiley)
 	local laserindex = (chunk * 32*32 + index) * 4 + direction - 1
 	return laserindex
 end
 
-function utils.calculateLaserOrigin(laserindex)
-	local temp = laserindex % (32*32*4)
-	local direction = temp % 4 + 1
-	local index = math.floor(temp / 4)
-	local chunk = math.floor(laserindex / (32*32*4))
-	return chunk, index, direction
+function utils.unpackLaserValue(laserindex)
+	local direction = laserindex % 4 + 1
+	local chunkindex = math.floor(laserindex / (32*32*4))
+	local tileindex = math.floor((laserindex % (32*32*4)) / 4)
+	local tilex, tiley = Utils.getCoordFromIdx(chunkindex, tileindex)
+	return tilex, tiley, direction
 end
 
 function utils.spiralIndexToCoord(index)

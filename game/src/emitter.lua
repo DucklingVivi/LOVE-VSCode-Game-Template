@@ -11,11 +11,11 @@ return function(direction, value)
 	emitter.value = value
 
 
-	emitter.update = function(self, dt, world, chunk, index)
-		if world.laserManager:laserAt(chunk, index, self.direction) then
-			world.laserManager:setLaserValue(chunk, index, self.direction, self.value)
+	emitter.update = function(self, dt, world, tilex, tiley)
+		if world.laserManager:laserAt(tilex, tiley, self.direction) then
+			world.laserManager:setLaserValue(tilex, tiley, self.direction, self.value)
 		else
-			world.laserManager:addLaser(chunk, index, self.direction, self.value, 48)
+			world.laserManager:addLaser(tilex, tiley, self.direction, self.value, 48)
 		end
 	end
 

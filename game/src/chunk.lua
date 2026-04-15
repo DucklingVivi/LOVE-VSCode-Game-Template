@@ -8,9 +8,18 @@ function Chunk:new()
 	end
 end
 
-function Chunk:update(dt, world, k)
-	for i, tile in pairs(self.tiles) do
-		tile:update(dt, world, k, i)
+function Chunk:update(dt, world, cx, cy)
+	local tx = 0
+	local ty = 0
+	local chunkx = cx * 32
+	local chunky = cy * 32
+	for _, tile in pairs(self.tiles) do
+		tx = tx + 1
+		if tx > 31 then
+			tx = 0
+			ty = ty + 1
+		end
+		tile:update(dt, world, chunkx + tx, chunky + ty)
 	end
 end
 

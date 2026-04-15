@@ -5,10 +5,10 @@ function Tile:new()
 	self.direction = 0
 end
 
-function Tile:update(dt, world, chunk, index)
+function Tile:update(dt, world, tileX, tileY)
 	local resource = Resources.tiles[self.id]
 	if resource and resource.update then
-		resource.update(self, dt, world, chunk, index)
+		resource.update(self, dt, world, tileX, tileY)
 	end
 end
 

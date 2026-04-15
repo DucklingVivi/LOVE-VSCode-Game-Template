@@ -31,20 +31,20 @@ function LaserManager:render()
 end
 
 
-function LaserManager:addLaser(chunk, index, direction, value, strength)
-	local laserindex = Utils.calculateLaserValue(chunk, index, direction)
+function LaserManager:addLaser(tilex, tiley, direction, value, strength)
+	local laserindex = Utils.calculateLaserValue(tilex, tiley, direction)
 	self.lasers[laserindex] = Laser(laserindex, value, strength)
 end
 
  
 
-function LaserManager:laserAt(chunk, index, direction)
-	local laserindex = Utils.calculateLaserValue(chunk, index, direction)
+function LaserManager:laserAt(tilex, tiley, direction)
+	local laserindex = Utils.calculateLaserValue(tilex, tiley, direction)
 	return self.lasers[laserindex]
 end
 
-function LaserManager:setLaserValue(chunk, index, direction, value)
-	local laserindex = Utils.calculateLaserValue(chunk, index, direction)
+function LaserManager:setLaserValue(tilex, tiley, direction, value)
+	local laserindex = Utils.calculateLaserValue(tilex, tiley, direction)
 	self.nextvalues[laserindex] = value
 end
 

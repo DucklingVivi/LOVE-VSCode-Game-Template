@@ -23,13 +23,48 @@ end
 
 function World:update(dt)
 	for k, chunk in pairs(self.chunks) do
-		chunk:update(dt, self, k)
+		local cx, cy = Utils.spiralIndexToCoord(k)
+		chunk:update(dt, self, cx, cy)
 	end
 	self.laserManager:update(dt, self)
 end
 
 
-function 
+function World:getTileAt(x, y)
+	local chunkidx, tileid = Utils.getIdxFromCoord(x,y)
+	return self.chunks[chunkidx].tiles[tileid]
+end
+
+function World:setTileAt(x, y, tile)
+	local chunkidx, tileid = Utils.getIdxFromCoord(x,y)
+	self.chunks[chunkidx].tiles[tileid] = tile
+	self.chunks[chunkidx].tiles[tileid]:create()
+end
+
+function World:render()
+
+	local rightMostChunk = math.ceil(Rendering.rightEdge / (32 * 36))
+	local topMostChunk = math.floor(Rendering.topEdge / (32 * 36))
+
+	local leftMostChunk = math.floor(Rendering.leftEdge / (32 * 36))
+	local bottomMostChunk = math.ceil(Rendering.bottomEdge / (32 * 36))
+
+	
+	for i = leftMostChunk - 1, rightMostChunk + 1, 1 do
+		for j = topMostChunk - 1, bottomMostChunk + 1, 1 do
+			local chunkIndex = Utils.coordToSpiralIndex(i, j)
+			local chunk = self.chunks[chunkIndex]
+			local chunkX = i * 32 * 36
+			local chunkY = j * 32 * 36
+			if chunk then
+				chunk:render(chunkX, chunkY)
+			end
+		end
+	end
+
+	Rendering.atlasSpriteBatch:setColor(1, 1, 1)
+	self.laserManager:render()
+end
 
 --- Deserializes packed data to reconstruct the World state.
 --- @param packedWorld string The serialized world data to deserialize

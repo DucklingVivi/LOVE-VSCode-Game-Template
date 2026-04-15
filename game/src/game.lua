@@ -63,18 +63,18 @@ function Game:update(dt)
 	local tiley = worldMouseY % 32
 
 	if(mouseDown1) then
-		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1] = Tile()
-		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].id = 11
-		self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1]:create()
-
+		local tile = Tile()
+		tile.id = 11
+		self.world:setTileAt(worldMouseX, worldMouseY, tile)
 	end
 	if(mouse2Pressed) then
-		if(self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].id ~= 12) then
-			self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1] = Tile()
-			self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].id = 12
-			self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1]:create()
+		if(self.world:getTileAt(worldMouseX, worldMouseY).id ~= 12) then
+			local tile = Tile()
+			tile.id = 12
+			self.world:setTileAt(worldMouseX, worldMouseY, tile)
 		else
-			self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].direction = (self.world.chunks[chunkIndex].tiles[tilex + tiley * 32 + 1].direction + 1) % 4
+			local tile = self.world:getTileAt(worldMouseX, worldMouseY)
+			tile.direction = (tile.direction + 1) % 4
 		end
 		
 	end
@@ -100,44 +100,20 @@ end
 function Game:draw()
 	love.graphics.push()
 	love.graphics.translate(-self.camera.x, -self.camera.y)
-
-	love.graphics.setColor(1, 0, 1);
-	--love.graphics.line(30, 0, 30, 1000);
-	love.graphics.setColor(1, 1, 1);
-
-	Rendering.atlasSpriteBatch:clear()
-
-	local width, height = love.graphics.getDimensions()
-	--get onscreen chunks
-
-	local rightEdge = width / 2 + self.camera.x + 25 -- right edge of screen in world coordinates
-	local topEdge = height / 2 + self.camera.y + 25 -- top edge of screen in world coordinates
-
-	local rightMostChunk = math.ceil(rightEdge / (32 * 36))
-	local topMostChunk = math.floor(topEdge / (32 * 36))
-
-	local leftEdge = self.camera.x - width / 2 - 25
-	local bottomEdge = self.camera.y - height / 2 - 25
-
-	local leftMostChunk = math.floor(leftEdge / (32 * 36))
-	local bottomMostChunk = math.ceil(bottomEdge / (32 * 36))
+	
 
 	
-	for i = leftMostChunk - 1, rightMostChunk + 1, 1 do
-		for j = topMostChunk - 1, bottomMostChunk + 1, 1 do
-			local chunkIndex = Utils.coordToSpiralIndex(i, j)
-			local chunk = self.world.chunks[chunkIndex]
-			local chunkX = i * 32 * 36
-			local chunkY = j * 32 * 36
-			if chunk then
-				chunk:render(chunkX, chunkY)
-			end
-		end
-	end
 
-	Rendering.atlasSpriteBatch:setColor(1, 1, 1)
-	self.world.laserManager:render()
+	local width, height = love.graphics.getDimensions()
+	Rendering.rightEdge = width / 2 + self.camera.x + 25 -- right edge of screen in world coordinates
+	Rendering.topEdge = height / 2 + self.camera.y + 25 -- top edge of screen in world coordinates
+	Rendering.leftEdge = self.camera.x - width / 2 - 25
+	Rendering.bottomEdge = self.camera.y - height / 2 - 25
+	Rendering.atlasSpriteBatch:clear()
 
+
+	love.graphics.setColor(1, 1, 1);
+	self.world:render()
 	love.graphics.draw(Rendering.atlasSpriteBatch)
 
 	local x, y = love.mouse.getPosition()
