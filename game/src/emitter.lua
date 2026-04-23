@@ -15,13 +15,17 @@ return function(direction, value)
 		if world.laserManager:laserAt(tilex, tiley, self.direction) then
 			world.laserManager:setLaserValue(tilex, tiley, self.direction, self.value)
 		else
-			world.laserManager:addLaser(tilex, tiley, self.direction, self.value, 48)
+			world.laserManager:addLaser(tilex, tiley, self.direction, self.value, 128, 1)
 		end
 	end
 
 	emitter.create = function(self)
 		self.direction = emitter.direction
 		self.value = emitter.value
+	end
+
+	emitter.destroy = function(self, x, y, world)
+		world.laserManager:removeLaser(x, y, self.direction)
 	end
 
 	emitter.serialize = function(self)

@@ -37,8 +37,14 @@ end
 
 function World:setTileAt(x, y, tile)
 	local chunkidx, tileid = Utils.getIdxFromCoord(x,y)
-	self.chunks[chunkidx].tiles[tileid] = tile
-	self.chunks[chunkidx].tiles[tileid]:create()
+	local oldTile = self.chunks[chunkidx].tiles[tileid]
+	oldTile:destroy(x,y, self)
+	self.chunks[chunkidx]:setTileAt(tileid, tile)
+	self.laserManager:updateChunkLasers(chunkidx)
+end
+
+function World:getLaserManager()
+	return self.laserManager
 end
 
 function World:render()
@@ -62,7 +68,7 @@ function World:render()
 		end
 	end
 
-	Rendering.atlasSpriteBatch:setColor(1, 1, 1)
+	Rendering.atlasSpriteBatch:setColor(1, 1, 1, 1)
 	self.laserManager:render()
 end
 

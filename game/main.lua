@@ -28,6 +28,15 @@ function love.load()
 	end
 end
 
+
+function love.keypressed(key,scancode,isrepeat)
+	game:keypressed(key, scancode)
+end
+
+function love.keyreleased(key, scancode)
+	game:keyreleased(key, scancode)
+end
+
 function love.update(dt)
 	game:update(dt);
 end

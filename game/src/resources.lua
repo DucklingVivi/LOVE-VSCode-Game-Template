@@ -48,7 +48,7 @@ end
 resources.atlas = stitch_atlas();
 
 -- Temporary table to hold method names for replacement after finish is called
-local replace_temp = {"serialize", "deserialize", "update", "create", "laser_enter"}
+local replace_temp = {"serialize", "deserialize", "update", "create", "laser_enter", "destroy", "key_pressed_over"}
 local mapper = {
 	serialize = function(funcs)
 		return function(self)
@@ -181,8 +181,11 @@ new_tile(11,"emitter")
 :finish()
 
 new_tile(12,"mirror")
-:color(1,1,1):with_component(resources.components.mirror)
+:color(0.85,0.85,1):with_component(resources.components.mirror)
 :finish()
 
+new_tile(13,"emitter")
+:color(0,1,1):with_component(resources.components.solid):with_component(resources.components.receiver)
+:finish()
 
 return resources

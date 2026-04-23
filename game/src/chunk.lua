@@ -14,13 +14,17 @@ function Chunk:update(dt, world, cx, cy)
 	local chunkx = cx * 32
 	local chunky = cy * 32
 	for _, tile in pairs(self.tiles) do
-		tx = tx + 1
 		if tx > 31 then
 			tx = 0
 			ty = ty + 1
 		end
 		tile:update(dt, world, chunkx + tx, chunky + ty)
+		tx = tx + 1
 	end
+end
+
+function Chunk:setTileAt(tileId, tile)
+	self.tiles[tileId] = tile
 end
 
 function Chunk:serialize()

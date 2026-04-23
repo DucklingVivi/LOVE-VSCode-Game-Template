@@ -4,6 +4,9 @@ require "src/world"
 function Game:new()
 	self.camera = Camera();
 	self.world = World();
+	self.keysPressedTemp = {}
+	self.keysPressed = {}
+	self.keys = {}
 end
 
 local packformat = "snn"
@@ -39,10 +42,23 @@ function Game:initalize()
 
 end
 
+function Game:updateKeys()
+	for key, v in pairs(self.keys) do
+		self.keys[key] = v + 1
+		if(not love.keyboard.isDown(key)) then
+			self.keys[key] = nil
+		end
+	end
+	self.keysPressed = self.keysPressedTemp
+	self.keysPressedTemp = {}
+end
 
 local oldMouse1Down = false
 local oldMouse2Down = false
 function Game:update(dt)
+
+	self:updateKeys()
+
 	local mouseDown1 = love.mouse.isDown(1)
 	local mouseDown2 = love.mouse.isDown(2)
 	local mouse1Pressed = mouseDown1 and not oldMouse1Down
@@ -54,27 +70,31 @@ function Game:update(dt)
 
 	worldMouseX = math.floor((worldMouseX - 7) / 36)
 	worldMouseY = math.floor((worldMouseY - 7) / 36)
-
-	local chunkX = math.floor(worldMouseX / 32)
-	local chunkY = math.floor(worldMouseY / 32)
-	local chunkIndex = Utils.coordToSpiralIndex(chunkX, chunkY)
-
-	local tilex = worldMouseX % 32
-	local tiley = worldMouseY % 32
+	local tileOver = self.world:getTileAt(worldMouseX, worldMouseY)
+	if tileOver then
+		local resource = tileOver:getResource()
+		if resource and resource.key_pressed_over then
+			resource.key_pressed_over(tileOver, self.world, worldMouseX, worldMouseY, self.keysPressed)
+		end
+	end
+	
 
 	if(mouseDown1) then
 		local tile = Tile()
-		tile.id = 11
+		tile.id = 13
 		self.world:setTileAt(worldMouseX, worldMouseY, tile)
+		tile:create()
 	end
 	if(mouse2Pressed) then
 		if(self.world:getTileAt(worldMouseX, worldMouseY).id ~= 12) then
 			local tile = Tile()
 			tile.id = 12
 			self.world:setTileAt(worldMouseX, worldMouseY, tile)
+			tile:create()
 		else
 			local tile = self.world:getTileAt(worldMouseX, worldMouseY)
 			tile.direction = (tile.direction + 1) % 4
+			self.world:setTileAt(worldMouseX, worldMouseY, tile)
 		end
 		
 	end
@@ -112,8 +132,9 @@ function Game:draw()
 	Rendering.atlasSpriteBatch:clear()
 
 
-	love.graphics.setColor(1, 1, 1);
+	love.graphics.setColor(1, 1, 1, 1);
 	self.world:render()
+	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.draw(Rendering.atlasSpriteBatch)
 
 	local x, y = love.mouse.getPosition()
@@ -132,3 +153,12 @@ function Game:reset()
 end
 
 
+
+function Game:keypressed(key, scancode)
+	self.keys[key] = 0;
+	table.insert(self.keysPressedTemp, key)
+end
+
+function Game:keyreleased(key, scancode)
+	self.keys[key] = nil;
+end

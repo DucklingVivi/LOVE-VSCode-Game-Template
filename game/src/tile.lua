@@ -58,6 +58,13 @@ function Tile:create()
 	end
 end
 
+function Tile:destroy(x, y, world)
+	local resource = Resources.tiles[self.id]
+	if resource and resource.destroy then
+		resource.destroy(self, x, y, world)
+	end
+end
+
 function Tile:render(x, y)
 	if Resources.tiles[self.id] then
 		Rendering.atlasSpriteBatch:setColor(self:getColor())
