@@ -1,6 +1,6 @@
 World = Object:extend()
-require "src/chunk"
-require "src/laserManager"
+require "src.world.chunk"
+require "src.world.laserManager"
 local packformat = "ss"
 
 local chunkmeta = {

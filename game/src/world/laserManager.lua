@@ -1,5 +1,5 @@
 LaserManager = Object:extend()
-require "src/laser"
+require "src.world.laser"
 
 
 

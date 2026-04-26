@@ -1,5 +1,5 @@
 Chunk = Object:extend()
-require "src/tile"
+require "src.world.tile"
 
 function Chunk:new()
 	self.tiles = {} -- 32x32 array of tiles

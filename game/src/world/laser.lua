@@ -1,5 +1,5 @@
 Laser = Object:extend()
-require "src/coord"
+require "src.world.coord"
 local laserSegment = Object:extend()
 
 

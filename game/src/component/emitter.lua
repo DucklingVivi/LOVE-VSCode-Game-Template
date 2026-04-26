@@ -1,13 +1,12 @@
 
 
 
-return function(direction, value)
+return function(value)
 	local emitter = {}
 
 
 	emitter.id = "emitter"
 
-	emitter.direction = direction
 	emitter.value = value
 
 
@@ -20,7 +19,7 @@ return function(direction, value)
 	end
 
 	emitter.create = function(self)
-		self.direction = emitter.direction
+		self.direction = 0
 		self.value = emitter.value
 	end
 

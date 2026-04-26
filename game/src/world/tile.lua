@@ -68,6 +68,6 @@ end
 function Tile:render(x, y)
 	if Resources.tiles[self.id] then
 		Rendering.atlasSpriteBatch:setColor(self:getColor())
-		Rendering.atlasSpriteBatch:add(self:getQuad(), x + 25, y + 25, math.pi * self.direction / 2,3,3, 6,6)
+		Rendering.atlasSpriteBatch:add(self:getQuad(), x + 25, y + 25, math.pi * (2 - (self.direction / 2)),3,3, 6,6)
 	end
 end

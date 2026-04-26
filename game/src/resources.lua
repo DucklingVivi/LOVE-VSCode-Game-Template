@@ -1,6 +1,7 @@
 local resources = {}
 resources.quads = {}
-resources.components = require("src/components")
+resources.components = require("src.resources.components")
+resources.font = require("src.resources.font")
 local to_stitch = {
 	["Debug4"] = love.graphics.newImage("assets/debug4.png"),
 	["emitter"] = love.graphics.newImage("assets/debug_emitter.png"),
@@ -9,12 +10,13 @@ local to_stitch = {
 	["laser"] = love.graphics.newImage("assets/laser.png")
 }
 
-local texture_size = 12
 local padding = 1
 local padding_per_texture = padding * 2
 local max_texture_size = 256
 
-local max_textures_per_row = math.floor(max_texture_size / (texture_size + padding_per_texture))
+
+
+
 
 
 local stitch_atlas = function()
@@ -176,16 +178,29 @@ new_tile(9,"Debug4"):color(1,0.5,0):finish()
 new_tile(10,"Debug4"):color(0.5,1,0):finish()
 
 
+-- Emitter
 new_tile(11,"emitter")
-:color(.5,1,0):with_component(resources.components.emitter)
+:color(.5,1,0)
+:with_component(resources.components.emitter)
+:with_component(resources.components.rotatable)
 :finish()
 
+
+-- Mirror
 new_tile(12,"mirror")
-:color(0.85,0.85,1):with_component(resources.components.mirror)
+:color(0.85,0.85,1)
+:with_component(resources.components.mirror)
+:with_component(resources.components.rotatable)
 :finish()
 
+
+
+-- Receiver
 new_tile(13,"emitter")
-:color(0,1,1):with_component(resources.components.solid):with_component(resources.components.receiver)
+:color(0,1,1)
+:with_component(resources.components.solid)
+:with_component(resources.components.receiver)
+:with_component(resources.components.rotatable)
 :finish()
 
 return resources

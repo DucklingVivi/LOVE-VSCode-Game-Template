@@ -1,9 +1,11 @@
 Game = Object:extend();
-require "src/camera"
-require "src/world"
+require "src.world.camera"
+require "src.world.world"
+require "src.UI.uiManager"
 function Game:new()
 	self.camera = Camera();
 	self.world = World();
+	self.uiManager = UI_Manager()
 	self.keysPressedTemp = {}
 	self.keysPressed = {}
 	self.keys = {}
@@ -29,8 +31,6 @@ end
 
 function Game:initalize()
 	
-	
-	self.world.chunks[1] = Chunk()
 	
 	for i = 1, 32*32, 1 do
 		--restrict to a 10x10 area for testing
@@ -58,6 +58,7 @@ local oldMouse2Down = false
 function Game:update(dt)
 
 	self:updateKeys()
+	self.uiManager:update(dt, self)
 
 	local mouseDown1 = love.mouse.isDown(1)
 	local mouseDown2 = love.mouse.isDown(2)
@@ -77,7 +78,6 @@ function Game:update(dt)
 			resource.key_pressed_over(tileOver, self.world, worldMouseX, worldMouseY, self.keysPressed)
 		end
 	end
-	
 
 	if(mouseDown1) then
 		local tile = Tile()
@@ -120,9 +120,6 @@ end
 function Game:draw()
 	love.graphics.push()
 	love.graphics.translate(-self.camera.x, -self.camera.y)
-	
-
-	
 
 	local width, height = love.graphics.getDimensions()
 	Rendering.rightEdge = width / 2 + self.camera.x + 25 -- right edge of screen in world coordinates
@@ -137,6 +134,7 @@ function Game:draw()
 	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.draw(Rendering.atlasSpriteBatch)
 
+
 	local x, y = love.mouse.getPosition()
 	local selectorx = math.floor((x + self.camera.x - 7) / 36) * 36 + 7
 	local selectory = math.floor((y + self.camera.y - 7) / 36) * 36 + 7
@@ -146,6 +144,8 @@ function Game:draw()
 		love.graphics.draw(Resources.atlas, Resources.quads["selector"], selectorx + offsetx * 36, selectory + offsety * 36, 0, 3, 3)
 	end
 	love.graphics.pop()
+	self.uiManager:draw()
+
 end
 
 function Game:reset()
@@ -156,7 +156,7 @@ end
 
 function Game:keypressed(key, scancode)
 	self.keys[key] = 0;
-	table.insert(self.keysPressedTemp, key)
+	self.keysPressedTemp[key] = true
 end
 
 function Game:keyreleased(key, scancode)
