@@ -1,6 +1,6 @@
 local components = {}
 
-components.emitter = require("src.component.emitter")(4)
+components.emitter = require("src.component.emitter")
 
 components.solid = require("src.component.solid")
 
@@ -10,5 +10,8 @@ components.mirror = require("src.component.mirror")
 
 components.rotatable = require("src.component.rotatable")
 
+components.automaton = require("src.component.automaton_component")
+
+components.dirtyable = require("src.component.dirtyable")
 
 return components

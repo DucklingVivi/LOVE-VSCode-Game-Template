@@ -7,7 +7,8 @@ local to_stitch = {
 	["emitter"] = love.graphics.newImage("assets/debug_emitter.png"),
 	["selector"] = love.graphics.newImage("assets/selector.png"),
 	["mirror"] = love.graphics.newImage("assets/mirror.png"),
-	["laser"] = love.graphics.newImage("assets/laser.png")
+	["laser"] = love.graphics.newImage("assets/laser.png"),
+	["automaton"] = love.graphics.newImage("assets/automaton.png")
 }
 
 local padding = 1
@@ -50,20 +51,29 @@ end
 resources.atlas = stitch_atlas();
 
 -- Temporary table to hold method names for replacement after finish is called
-local replace_temp = {"serialize", "deserialize", "update", "create", "laser_enter", "destroy", "key_pressed_over"}
+local replace_temp = {"serialize", "deserialize", "update", "create", "laser_enter", "destroy", "key_pressed_over", "draw_over", "receive_signal", "to_emit", "clean"}
 local mapper = {
-	serialize = function(funcs)
+	to_emit = function(funcs,v)
+		return function(...)
+			local signals = {}
+			for f, comp in pairs(funcs) do
+				signals[f] = comp[v](...)
+			end
+			return signals[next(signals)] --Discard all but 1
+		end
+	end,
+	serialize = function(comps,v)
 		return function(self)
 			local packedData = ""
 			local count = 0
-			for key, func in pairs(funcs) do
+			for _, comp in pairs(comps) do
 				count = count + 1
-				packedData = packedData .. love.data.pack("string", "ss", key, func(self))
+				packedData = packedData .. love.data.pack("string", "ss", comp.id, comp[v](self))
 			end
 			return love.data.pack("string", "B", count) .. packedData
 		end
 	end,
-	deserialize = function(funcs)
+	deserialize = function(comps,v)
 
 		return function(self, packedData)
 			local number, index = love.data.unpack("B", packedData)
@@ -77,15 +87,15 @@ local mapper = {
 				index = new_index
 				values[key] = data
 			end
-			for k, func in pairs(funcs) do
-				func(self, values[k])
+			for _, comp in pairs(comps) do
+				comp[v](self, values[comp.id])
 			end
 		end
 	end,
-	default = function(funcs)
+	default = function(comps,v)
 		return function(...)
-			for _, func in pairs(funcs) do
-				func(...)
+			for _, comp in pairs(comps) do
+				comp[v](...)
 			end
 		 end
 	end
@@ -114,7 +124,7 @@ local function new_tile(id, texture)
 			return self
 		end,
 		with_component = function(self, component)
-			self.components[component.id] = component
+			table.insert(self.components, component)
 			return self
 		end,
 		has_extra_data = function(self)
@@ -130,12 +140,12 @@ local function new_tile(id, texture)
 			for _, v in pairs(replace_temp) do
 				for _, component in pairs(self.components) do
 					if component[v] then
-						self["funcs_"..v][component.id] = component[v]
+						table.insert(self["funcs_"..v], component)
 					end
 				end
 				self[v] = nil
 				if self["t"..v] ~= nil then
-					self["funcs_"..v]["t"] = self["t"..v]
+					table.insert(self["funcs_"..v], self)
 					self["t"..v] = nil
 				end
 				local count = 0
@@ -143,7 +153,7 @@ local function new_tile(id, texture)
 					count = count + 1
 				end
 				if count > 0 then
-					self[v] = mapper[v](self["funcs_"..v])
+					self[v] = mapper[v](self["funcs_"..v],v)
 				end
 			end
 			
@@ -201,6 +211,16 @@ new_tile(13,"emitter")
 :with_component(resources.components.solid)
 :with_component(resources.components.receiver)
 :with_component(resources.components.rotatable)
+:finish()
+
+new_tile(14,"automaton")
+:color(1,0.5,1)
+:with_component(resources.components.dirtyable)
+:with_component(resources.components.automaton)
+:with_component(resources.components.solid)
+:with_component(resources.components.receiver)
+:with_component(resources.components.rotatable)
+:with_component(resources.components.emitter)
 :finish()
 
 return resources

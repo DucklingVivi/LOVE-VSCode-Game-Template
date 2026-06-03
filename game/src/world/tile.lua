@@ -1,7 +1,17 @@
 Tile = Object:extend()
 
-function Tile:new()
-	self.id = 0
+function Tile:__index(key)
+	local val = rawget(self, key) or getmetatable(self)[key]
+	if val then
+		return val
+	end
+	local id = rawget(self, "id")
+	local resource = Resources.tiles[id]
+	return (resource and resource[key])
+end
+
+function Tile:new(id)
+	self.id = id or 0
 	self.direction = 0
 end
 
@@ -66,8 +76,12 @@ function Tile:destroy(x, y, world)
 end
 
 function Tile:render(x, y)
-	if Resources.tiles[self.id] then
+	local resource = Resources.tiles[self.id]
+	if resource then
+		if resource.draw_over then
+			resource.draw_over(self, x, y)
+		end
 		Rendering.atlasSpriteBatch:setColor(self:getColor())
-		Rendering.atlasSpriteBatch:add(self:getQuad(), x + 25, y + 25, math.pi * (2 - (self.direction / 2)),3,3, 6,6)
+		Rendering.atlasSpriteBatch:add(self:getQuad(), x + 25, y + 25, math.pi * (2 - (self.direction + 1) / 2),3,3, 6,6)
 	end
 end

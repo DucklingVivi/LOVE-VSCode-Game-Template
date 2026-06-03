@@ -1,5 +1,6 @@
 
 local game;
+local loading = true
 function love.load()
 	love.graphics.setDefaultFilter("nearest", "nearest")
 	Object = require "lib/classic"
@@ -22,9 +23,11 @@ function love.load()
 		local save = Save.fromFile(f)
 		f:close()
 		game = save:saveToGame()
+		loading = false
 	else
 		game = Game();
 		game:initalize()
+		loading = false
 	end
 end
 
@@ -38,6 +41,7 @@ function love.keyreleased(key, scancode)
 end
 
 function love.update(dt)
+	if loading then return end
 	game:update(dt);
 end
 

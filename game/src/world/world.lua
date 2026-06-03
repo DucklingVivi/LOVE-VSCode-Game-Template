@@ -109,9 +109,10 @@ function World:serialize()
 	local currentIndex = 1
 	for i, chunk in pairs(self.chunks) do
 		local indexDiff = i - currentIndex
-		if indexDiff > 0 then
+		while indexDiff > 0 do
 			resultformat = resultformat .. "B"
-			packedData = packedData .. love.data.pack("string","B", indexDiff)
+			packedData = packedData .. love.data.pack("string","B", math.min(indexDiff, 255))
+			indexDiff = indexDiff - 255
 		end
 		resultformat = resultformat .. "s"
 		packedData = packedData .. love.data.pack("string", "s", chunk:serialize())

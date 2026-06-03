@@ -53,6 +53,8 @@ function Game:updateKeys()
 	self.keysPressedTemp = {}
 end
 
+
+local toplace = 12
 local oldMouse1Down = false
 local oldMouse2Down = false
 function Game:update(dt)
@@ -81,7 +83,7 @@ function Game:update(dt)
 
 	if(mouseDown1) then
 		local tile = Tile()
-		tile.id = 13
+		tile.id = toplace
 		self.world:setTileAt(worldMouseX, worldMouseY, tile)
 		tile:create()
 	end
@@ -110,6 +112,13 @@ function Game:update(dt)
 		file:close()
 	end
 	
+	if self.keysPressed["z"] then
+		toplace = toplace - 1
+	end
+	if self.keysPressed["x"] then
+		toplace = toplace + 1
+	end
+
 	oldMouse1Down = mouseDown1
 	oldMouse2Down = mouseDown2
 

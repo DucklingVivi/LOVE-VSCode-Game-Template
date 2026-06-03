@@ -8,7 +8,7 @@ rotatable.key_pressed_over = function(self, world, x, y, keys)
 		local dir = 0
 		dir = dir - (keys["e"] and 1 or 0)
 		dir = dir + (keys["q"] and 1 or 0)
-		self.direction = (self.direction + 3 + dir) % 4 + 1
+		self.direction = (self.direction + 4 + dir) % 4
 		world:setTileAt(x, y, self)
 	end
 end
