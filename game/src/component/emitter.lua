@@ -1,37 +1,44 @@
 
 require "src.signal.signal"
-local emitter = {}
+local emitter = Component("emitter")
 
 
-emitter.id = "emitter"
-
-
-emitter.clean = function(self)
-	self.value = self:to_emit()
+emitter.clean = function(tile)
+	tile.value = tile:to_emit()
+	tile.laserdirty = true
 end
 
-emitter.update = function(self, dt, world, tilex, tiley)
-	if world.laserManager:laserAt(tilex, tiley, self.direction + 1) then
-		world.laserManager:setLaserValue(tilex, tiley, self.direction + 1, self.value)
+emitter.get_update_phases = function(tile)
+	return {"post"}
+end
+
+
+emitter.update = function(tile, phase, world, tilex, tiley)
+	local laser = world.laserManager:laserAt(tilex, tiley, tile.direction)
+	if laser then
+		if tile.laserdirty then
+			world.laserManager:setLaserValue(tilex, tiley, tile.direction, tile.value)
+			tile.laserdirty = false
+		end
 	else
-		world.laserManager:addLaser(tilex, tiley, self.direction + 1, self.value, 128, 1)
+		world.laserManager:addLaser(tilex, tiley, tile.direction, tile.value, 128, 1)
 	end
 end
 
-emitter.create = function(self)
-	self.dirty = true
+emitter.create = function(tile)
+	tile:dirty()
 end
 
-emitter.destroy = function(self, x, y, world)
-	world.laserManager:removeLaser(x, y, self.direction + 1)
+emitter.destroy = function(tile, x, y, world)
+	world.laserManager:removeLaser(x, y, tile.direction)
 end
 
-emitter.serialize = function(self)
+emitter.serialize = function(tile)
 	return ""
 end
 
-emitter.deserialize = function(self, packedEmitter)
-	self.dirty = true
+emitter.deserialize = function(tile, packedEmitter)
+	tile:dirty()
 end
 
 return emitter

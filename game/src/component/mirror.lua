@@ -1,18 +1,12 @@
-local mirror = {}
+local mirror = Component("mirror")
 
 
-
-
-mirror.id = "mirror"
-
-
-mirror.laser_enter = function(self, world, laser, segment)
-	local offset = (self.direction % 2 * 2 - 1)
+mirror.laser_enter = function(tile, world, laser, segment)
+	local offset = (tile.direction % 2 * 2 - 1)
 	offset = offset * (segment.direction % 2 * 2 - 1)
 	local newDirection = (segment.direction + 5 + offset) % 4 + 1
-	segment.length = segment.length - 1
 	laser:addSegment(segment.strength, newDirection, segment.tilex, segment.tiley, 0)
-	laser:finishSegment(segment)
+	laser:finishSegment(segment, -1)
 	
 end
 

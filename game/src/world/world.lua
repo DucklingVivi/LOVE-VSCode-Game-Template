@@ -21,12 +21,21 @@ function World:new()
 	self.laserManager = LaserManager()
 end
 
-function World:update(dt)
-	for k, chunk in pairs(self.chunks) do
-		local cx, cy = Utils.spiralIndexToCoord(k)
-		chunk:update(dt, self, cx, cy)
+
+
+local update_phases = {
+	pre = 1,
+	update = 2,
+	post = 3
+}
+function World:update()
+	for k, _ in pairs(update_phases) do
+		for idx, chunk in pairs(self.chunks) do
+			local cx, cy = Utils.spiralIndexToCoord(idx)
+			chunk:update(k, self, cx, cy)
+		end
 	end
-	self.laserManager:update(dt, self)
+	self.laserManager:update("post", self)
 end
 
 
@@ -40,7 +49,27 @@ function World:setTileAt(x, y, tile)
 	local oldTile = self.chunks[chunkidx].tiles[tileid]
 	oldTile:destroy(x,y, self)
 	self.chunks[chunkidx]:setTileAt(tileid, tile)
+	self.chunks[chunkidx]:dirty()
+	self:updateTileAt(x, y)
 	self.laserManager:updateChunkLasers(chunkidx)
+end
+
+
+
+local adjacentOffsets = {
+	{dx = -1, dy = 0},
+	{dx = 1, dy = 0},
+	{dx = 0, dy = -1},
+	{dx = 0, dy = 1}
+}
+function World:updateTileAt(x,y)
+	for i = 1, 4, 1 do
+		local offset = adjacentOffsets[i]
+		local adjx = x + offset.dx
+		local adjy = y + offset.dy
+		local chunkidx, tileid = Utils.getIdxFromCoord(adjx, adjy)
+		self.chunks[chunkidx]:updateTileAt(tileid)
+	end
 end
 
 function World:getLaserManager()

@@ -1,10 +1,7 @@
-local solid = {}
+local solid = Component("solid")
 
-solid.id = "solid"
-
-solid.laser_enter = function(self, world, laser, segment)
-	segment.length = segment.length - 2
-	laser:finishSegment(segment)
+solid.laser_enter = function(tile, world, laser, segment)
+	laser:finishSegment(segment, -2)
 end
   
 return solid

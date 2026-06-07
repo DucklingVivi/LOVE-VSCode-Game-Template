@@ -8,7 +8,8 @@ local to_stitch = {
 	["selector"] = love.graphics.newImage("assets/selector.png"),
 	["mirror"] = love.graphics.newImage("assets/mirror.png"),
 	["laser"] = love.graphics.newImage("assets/laser.png"),
-	["automaton"] = love.graphics.newImage("assets/automaton.png")
+	["automaton"] = love.graphics.newImage("assets/automaton.png"),
+	["multitile"] = love.graphics.newImage("assets/multitile.png")
 }
 
 local padding = 1
@@ -51,7 +52,11 @@ end
 resources.atlas = stitch_atlas();
 
 -- Temporary table to hold method names for replacement after finish is called
-local replace_temp = {"serialize", "deserialize", "update", "create", "laser_enter", "destroy", "key_pressed_over", "draw_over", "receive_signal", "to_emit", "clean"}
+local replace_temp = {"serialize", "deserialize", "update", "create", 
+"get_update_phases", "neighbor_update",
+"laser_enter", "laser_update", "laser_clean", 
+"clean", "dirty", "destroy", "key_pressed_over", "draw_over",
+ "receive_signal", "to_emit", "receive_connection", "send_connection"}
 local mapper = {
 	to_emit = function(funcs,v)
 		return function(...)
@@ -92,6 +97,18 @@ local mapper = {
 			end
 		end
 	end,
+	get_update_phases = function(comps,v)
+		return function(self)
+			local retval = {}
+			for _, comp in pairs(comps) do
+				local result = comp[v](self)
+				for _, value in ipairs(result or {}) do
+					retval[value] = true
+				end
+			end
+			return retval
+		end
+	end,
 	default = function(comps,v)
 		return function(...)
 			for _, comp in pairs(comps) do
@@ -115,6 +132,7 @@ local function new_tile(id, texture)
 		g = 1,
 		b = 1,
 		a = 1,
+		phases = {},
 		components = {},
 		color = function(self, r, g, b, a)
 			self.r = r
@@ -135,7 +153,7 @@ local function new_tile(id, texture)
 			end
 			return false
 		end,
-		finish = function(self)
+		build = function(self)
 			
 			for _, v in pairs(replace_temp) do
 				for _, component in pairs(self.components) do
@@ -144,10 +162,6 @@ local function new_tile(id, texture)
 					end
 				end
 				self[v] = nil
-				if self["t"..v] ~= nil then
-					table.insert(self["funcs_"..v], self)
-					self["t"..v] = nil
-				end
 				local count = 0
 				for _, _ in pairs(self["funcs_"..v]) do
 					count = count + 1
@@ -156,7 +170,6 @@ local function new_tile(id, texture)
 					self[v] = mapper[v](self["funcs_"..v],v)
 				end
 			end
-			
 			self.color = function(s)
 				return s.r, s.g, s.b, s.a
 			end
@@ -176,51 +189,9 @@ end
 
 
 
-new_tile(1,"Debug4"):finish()
-new_tile(2,"Debug4"):color(1,0,0):finish()
-new_tile(3,"Debug4"):color(0,1,0):finish()
-new_tile(4,"Debug4"):color(0,0,1):finish()
-new_tile(5,"Debug4"):color(1,1,0):finish()
-new_tile(6,"Debug4"):color(1,0,1):finish()
-new_tile(7,"Debug4"):color(0,1,1):finish()
-new_tile(8,"Debug4"):color(0.5,0.5,0.5):finish()
-new_tile(9,"Debug4"):color(1,0.5,0):finish()
-new_tile(10,"Debug4"):color(0.5,1,0):finish()
+--Load tiles from external file
+require("src.resources.tiles")(resources, new_tile)
 
 
--- Emitter
-new_tile(11,"emitter")
-:color(.5,1,0)
-:with_component(resources.components.emitter)
-:with_component(resources.components.rotatable)
-:finish()
-
-
--- Mirror
-new_tile(12,"mirror")
-:color(0.85,0.85,1)
-:with_component(resources.components.mirror)
-:with_component(resources.components.rotatable)
-:finish()
-
-
-
--- Receiver
-new_tile(13,"emitter")
-:color(0,1,1)
-:with_component(resources.components.solid)
-:with_component(resources.components.receiver)
-:with_component(resources.components.rotatable)
-:finish()
-
-new_tile(14,"automaton")
-:color(1,0.5,1)
-:with_component(resources.components.dirtyable)
-:with_component(resources.components.automaton)
-:with_component(resources.components.solid)
-:with_component(resources.components.receiver)
-:with_component(resources.components.rotatable)
-:with_component(resources.components.emitter)
-:finish()
 
 return resources

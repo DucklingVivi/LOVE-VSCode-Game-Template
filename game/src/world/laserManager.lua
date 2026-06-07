@@ -33,6 +33,7 @@ function LaserManager:update(dt, world)
 			laser:setValue(nextvalue)
 		end
 		if laser.dirty then
+			laser:clean()
 			laser:buildSegments(world)
 			laser.dirty = false
 		end
@@ -50,6 +51,7 @@ end
 function LaserManager:addLaser(tilex, tiley, direction, value, strength, slength)
 	local laserindex = Utils.calculateLaserValue(tilex, tiley, direction)
 	self.lasers[laserindex] = Laser(laserindex, value, strength, slength)
+	self.nextvalues[laserindex] = value
 end
 
 function LaserManager:removeLaser(tilex, tiley, direction)

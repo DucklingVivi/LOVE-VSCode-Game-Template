@@ -119,6 +119,8 @@ function Game:update(dt)
 		toplace = toplace + 1
 	end
 
+	
+
 	oldMouse1Down = mouseDown1
 	oldMouse2Down = mouseDown2
 
@@ -136,14 +138,16 @@ function Game:draw()
 	Rendering.leftEdge = self.camera.x - width / 2 - 25
 	Rendering.bottomEdge = self.camera.y - height / 2 - 25
 	Rendering.atlasSpriteBatch:clear()
-
-
+	love.graphics.setCanvas(Rendering.worldCanvas)
+	love.graphics.clear()
 	love.graphics.setColor(1, 1, 1, 1);
+
 	self.world:render()
+
+	love.graphics.setCanvas()
 	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.draw(Rendering.atlasSpriteBatch)
-
-
+	
 	local x, y = love.mouse.getPosition()
 	local selectorx = math.floor((x + self.camera.x - 7) / 36) * 36 + 7
 	local selectory = math.floor((y + self.camera.y - 7) / 36) * 36 + 7
@@ -153,7 +157,16 @@ function Game:draw()
 		love.graphics.draw(Resources.atlas, Resources.quads["selector"], selectorx + offsetx * 36, selectory + offsety * 36, 0, 3, 3)
 	end
 	love.graphics.pop()
+
+	love.graphics.draw(Rendering.worldCanvas) -- Draw the world canvas on top of the atlas sprite batch
 	self.uiManager:draw()
+
+	local resource = Resources.tiles[toplace]
+	if resource then
+		love.graphics.setColor(resource:color())
+		love.graphics.draw(Resources.atlas, Resources.quads[resource.texture], 0, height - 36, 0, 3, 3)
+	end
+
 
 end
 

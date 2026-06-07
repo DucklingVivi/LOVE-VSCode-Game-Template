@@ -1,12 +1,19 @@
-local receiver = {}
+local receiver = Component("receiver")
 
-receiver.id = "receiver"
 
-receiver.laser_enter = function(self, world, laser, segment)
-	local resource = self:getResource()
-	if(resource and resource.receive_signal) then
-		resource.receive_signal(self,world, laser)
-	end
+receiver.laser_clean = function(tile)
+	tile.received_value = nil
 end
-  
+
+receiver.laser_enter = function(tile, world, laser, segment)
+	laser:addEndpoint(world, segment)
+	tile.received_value = laser.value
+end
+
+receiver.laser_update = function(tile, laser)
+	local laser_value = laser.value
+	tile.received_value = laser_value
+end
+
+
 return receiver

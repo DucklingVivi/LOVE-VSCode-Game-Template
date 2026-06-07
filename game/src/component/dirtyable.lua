@@ -1,15 +1,21 @@
-local dirtyable = {}
+--- @class DirtyableComponent : Component
+local dirtyable = Component("dirtyable")
 
-dirtyable.id = "dirtyable"
+dirtyable.get_update_phases = function(tile)
+	return {"pre"}
+end
 
-dirtyable.update = function(self, dt, world)
-	if self.dirty then
-		if(self.clean) then
-			self.clean(self)
+dirtyable.update = function(tile, phase, world, tileX, tileY)
+	if tile.dirty then
+		if(tile.clean) then
+			tile.clean(tile, world, tileX, tileY)
 		end
-		self.dirty = false
+		tile.dirty = false
 	end
 end
 
+dirtyable.dirty = function(tile)
+	tile.dirty = true
+end
 
 return dirtyable

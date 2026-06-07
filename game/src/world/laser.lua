@@ -68,10 +68,19 @@ end
 
 
 
-
+function Laser:clean()
+	for _, tile in pairs(self.endpoints) do
+		local resource = tile:getResource()
+		if resource and resource.laser_clean then
+			resource.laser_clean(tile)
+		end
+	end
+end
 
 function Laser:buildSegments(world)
 	self.segments = {}
+	self.endpoints = {}
+
 	local current = self.origin
 	local tilex, tiley, direction = Utils.unpackLaserValue(current)
 	
@@ -93,14 +102,27 @@ function Laser:addSegment(strength, direction, tilex, tiley, slength)
 	return segment
 end
 
-function Laser:finishSegment(segment)
+function Laser:finishSegment(segment, length)
+	if(segment.finished) then return end
+	segment.finished = true
 	segment.strength = 0
+	segment.length = segment.length + length
 	table.insert(self.segments, segment)
 end
 
+function Laser:addEndpoint(world, segment)
+	local tile = world.getTileAt(world, segment.tilex, segment.tiley)
+	table.insert(self.endpoints, tile)
+end
 
 function Laser:setValue(value)
 	self.value = value
+	for _, tile in pairs(self.endpoints) do
+		local resource = tile:getResource()
+		if resource and resource.laser_update then
+			resource.laser_update(tile, self)
+		end
+	end
 end
 
 function Laser:getColor()

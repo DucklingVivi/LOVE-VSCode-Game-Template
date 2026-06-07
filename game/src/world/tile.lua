@@ -15,15 +15,29 @@ function Tile:new(id)
 	self.direction = 0
 end
 
-function Tile:update(dt, world, tileX, tileY)
+function Tile:get_update_phases()
+	local resource = Resources.tiles[self.id]
+	if resource and resource.get_update_phases then
+		return resource.get_update_phases()
+	end
+end
+
+function Tile:update(phase, world, tileX, tileY)
 	local resource = Resources.tiles[self.id]
 	if resource and resource.update then
-		resource.update(self, dt, world, tileX, tileY)
+		resource.update(self, phase, world, tileX, tileY)
+	end
+end
+
+function Tile:neighbor_update()
+	local resource = Resources.tiles[self.id]
+	if resource and resource.neighbor_update then
+		resource.neighbor_update(self)
 	end
 end
 
 function Tile:serialize()
-	local directionBits = bit.lshift(bit.band(self.direction,0x00000011), 6)
+	local directionBits = bit.lshift(bit.band(self.direction,0b00000011), 6)
 	local data = bit.bor(bit.band(self.id, 0b00111111), directionBits)
 	local serializedTile = love.data.pack("string", "B", data)
 	local resource = Resources.tiles[self.id]
@@ -77,11 +91,7 @@ end
 
 function Tile:render(x, y)
 	local resource = Resources.tiles[self.id]
-	if resource then
-		if resource.draw_over then
-			resource.draw_over(self, x, y)
-		end
-		Rendering.atlasSpriteBatch:setColor(self:getColor())
-		Rendering.atlasSpriteBatch:add(self:getQuad(), x + 25, y + 25, math.pi * (2 - (self.direction + 1) / 2),3,3, 6,6)
+	if resource and resource.draw_over then
+		resource.draw_over(self, x, y)
 	end
 end
